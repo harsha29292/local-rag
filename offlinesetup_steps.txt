@@ -1,0 +1,84 @@
+Then transfer to offline PC:
+
+local-rag/
+offline_pkgs/
+requirements-lock.txt
+.env
+
+Offline install:
+
+cd local-rag
+
+python -m venv venv
+.\venv\Scripts\activate
+
+pip install --no-index --find-links=offline_pkgs -r requirements-lock.txt
+
+
+Your offline .env should include:
+
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_CHAT_MODEL=phi3:mini
+OLLAMA_EMBED_MODEL=nomic-embed-text
+RERANKER_ENABLED=false
+
+WINDOWS 10 PYTHON VERSION STEPS:
+
+On the online PC, download the Windows x64 installer for one Python version, for example Python 3.13.x.
+Copy that same .exe installer to the offline Windows 10 PC.
+Install Python from that same file on both systems.
+Then build offline_pkgs using that Python version.
+Check version on both:
+
+python --version
+They should print the exact same version, for example:
+
+Python 3.13.12
+Also use the same architecture:
+
+python -c "import platform; print(platform.architecture())"
+Should be:
+
+('64bit', 'WindowsPE')
+
+
+
+
+WINDOWS 11 PYTHON VERSION STEPS: 
+Use the exact same Python installer on both systems:
+
+Download Windows x64 Python installer on online PC.
+Copy that same .exe to Windows 11 offline PC.
+Install it there.
+Confirm both match:
+python --version
+python -c "import platform; print(platform.architecture())"
+Both should show the same Python version and 64bit.
+
+Then create offline packages on the online PC using that same Python version:
+
+python -m venv build_venv
+.\build_venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip freeze --local > requirements-lock.txt
+pip download --only-binary=:all: -r requirements-lock.txt -d offline_pkgs
+This works the same for Windows 10 and Windows 11, as long as both are 64-bit and use the same Python version.
+
+
+
+FINAL CHECKLIST : 
+
+Same Python installer/version on online and offline PC
+Same 64-bit Windows architecture
+Build requirements-lock.txt from clean venv
+Download wheels into offline_pkgs
+Transfer project + offline_pkgs + requirements-lock.txt + .env
+Offline install with --no-index --find-links
+Ollama installed and running
+phi3:mini and nomic-embed-text available
+Set RERANKER_ENABLED=false
+Then run:
+
+uvicorn backend.app:app --host 127.0.0.1 --port 8000
+streamlit run frontend/Home.py --server.port 8501
+
