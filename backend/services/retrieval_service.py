@@ -29,6 +29,7 @@ class RetrievalService:
     async def retrieve(self, user: User, query: str, top_k: int | None = None) -> list[RetrievedChunk]:
         """Run hybrid retrieval scoped to one user."""
 
+        query = _normalize_query(query)
         final_top_k = top_k or self.settings.retrieval_final_top_k
         sparse_task = asyncio.create_task(self.bm25_store.search(user.id, query, self.settings.retrieval_sparse_top_k))
 
@@ -77,3 +78,13 @@ def source_chunks(results: list[RetrievedChunk]) -> list[SourceChunk]:
         )
         for item in results
     ]
+
+
+def _normalize_query(query: str) -> str:
+    """Clean small common input slips before retrieval."""
+
+    cleaned = " ".join(query.strip().split())
+    lower = cleaned.lower()
+    if lower.startswith("hich "):
+        cleaned = "w" + cleaned
+    return cleaned

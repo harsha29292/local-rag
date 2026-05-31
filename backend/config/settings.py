@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 720
 
     ollama_base_url: str = "http://localhost:11434"
-    ollama_chat_model: str = "phi3:mini"
+    ollama_chat_model: str = "llama3.2:latest"
     ollama_embed_model: str = "nomic-embed-text"
     ollama_timeout_seconds: float = 120.0
     ollama_request_retries: int = 2
