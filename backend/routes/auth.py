@@ -15,7 +15,7 @@ router = APIRouter()
 async def register(payload: AuthRequest) -> TokenResponse:
     """Register a new local user."""
 
-    token, user = await AuthService().register(payload.username, payload.password)
+    token, user = await AuthService().register(payload.username, payload.password, payload.registration_code)
     return TokenResponse(access_token=token, username=user.username)
 
 

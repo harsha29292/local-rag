@@ -38,8 +38,12 @@ def _handle_response(response: httpx.Response) -> Any:
     return response.json()
 
 
-def register(username: str, password: str) -> dict[str, Any]:
-    response = httpx.post(f"{API_BASE_URL}/auth/register", json={"username": username, "password": password}, timeout=30)
+def register(username: str, password: str, registration_code: str | None = None) -> dict[str, Any]:
+    response = httpx.post(
+        f"{API_BASE_URL}/auth/register",
+        json={"username": username, "password": password, "registration_code": registration_code},
+        timeout=30,
+    )
     return _handle_response(response)
 
 
@@ -61,6 +65,12 @@ def list_documents(token: str) -> list[dict[str, Any]]:
 def upload_document(token: str, filename: str, data: bytes) -> dict[str, Any]:
     files = {"file": (filename, data)}
     response = httpx.post(f"{API_BASE_URL}/documents", headers=_headers(token), files=files, timeout=600)
+    return _handle_response(response)
+
+
+def upload_documents(token: str, uploads: list[tuple[str, bytes]]) -> dict[str, Any]:
+    files = [("files", (filename, data)) for filename, data in uploads]
+    response = httpx.post(f"{API_BASE_URL}/documents/batch", headers=_headers(token), files=files, timeout=1200)
     return _handle_response(response)
 
 

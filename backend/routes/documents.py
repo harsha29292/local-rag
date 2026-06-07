@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, File, Response, UploadFile, status
 
 from backend.models.domain import User
-from backend.schemas.documents import DocumentIngestResponse, DocumentResponse
+from backend.schemas.documents import DocumentBatchIngestResponse, DocumentIngestResponse, DocumentResponse
 from backend.services.auth_service import get_current_user
 from backend.services.document_service import DocumentService
 
@@ -28,6 +28,17 @@ async def upload_document(
 
     document = await DocumentService().ingest_upload(current_user, file)
     return DocumentIngestResponse(document=document, message="Document indexed")
+
+
+@router.post("/batch", response_model=DocumentBatchIngestResponse, status_code=status.HTTP_201_CREATED)
+async def upload_documents(
+    files: list[UploadFile] = File(...),
+    current_user: User = Depends(get_current_user),
+) -> DocumentBatchIngestResponse:
+    """Upload and index multiple documents sequentially."""
+
+    documents = await DocumentService().ingest_uploads(current_user, files)
+    return DocumentBatchIngestResponse(documents=documents, message=f"Indexed {len(documents)} document(s)")
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)

@@ -36,15 +36,26 @@ class Settings(BaseSettings):
     ollama_request_retries: int = 2
 
     max_upload_mb: int = 50
-    chunk_size_tokens: int = 600
-    chunk_overlap_tokens: int = 100
+    max_files_per_upload: int = 5
+    max_documents_per_user: int = 5
+    max_pages_per_user: int = 800
+    max_pages_per_document: int = 800
+    allowed_upload_extensions: list[str] = Field(default_factory=lambda: [".pdf", ".docx", ".txt"])
+    chunk_size_tokens: int = 650
+    chunk_overlap_tokens: int = 90
 
     retrieval_dense_top_k: int = 24
     retrieval_sparse_top_k: int = 24
     retrieval_final_top_k: int = 6
+    retrieval_min_score: float = 0.012
+    retrieval_min_query_overlap: int = 1
+    rag_context_max_chars: int = 12000
     rrf_k: int = 60
 
-    reranker_enabled: bool = True
+    public_registration_enabled: bool = True
+    registration_invite_code: str | None = None
+
+    reranker_enabled: bool = False
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     reranker_max_candidates: int = 12
 
@@ -56,6 +67,15 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
+
+    @field_validator("allowed_upload_extensions", mode="before")
+    @classmethod
+    def parse_allowed_upload_extensions(cls, value: str | list[str]) -> list[str]:
+        """Allow comma-delimited file extensions in .env files."""
+
+        if isinstance(value, str):
+            return [item.strip().lower() for item in value.split(",") if item.strip()]
+        return [item.lower() for item in value]
 
     @property
     def max_upload_bytes(self) -> int:

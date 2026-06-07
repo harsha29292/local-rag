@@ -8,6 +8,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from backend.config.settings import get_settings
 from backend.db.database import fetch_one, get_db
 from backend.models.domain import User
 from backend.utils.security import create_access_token, decode_access_token, hash_password, verify_password
@@ -18,8 +19,14 @@ bearer_scheme = HTTPBearer(auto_error=False)
 class AuthService:
     """User registration, login, and token validation."""
 
-    async def register(self, username: str, password: str) -> tuple[str, User]:
+    async def register(self, username: str, password: str, registration_code: str | None = None) -> tuple[str, User]:
         """Create a user and return a token."""
+
+        settings = get_settings()
+        if not settings.public_registration_enabled:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Registration is disabled")
+        if settings.registration_invite_code and registration_code != settings.registration_invite_code:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid registration code")
 
         db = await get_db()
         password_hash = hash_password(password)

@@ -37,8 +37,9 @@ def render_auth_sidebar() -> str | None:
         with tab_register:
             username = st.text_input("Username", key="register_username")
             password = st.text_input("Password", type="password", key="register_password")
+            registration_code = st.text_input("Registration code", type="password", key="register_code")
             if st.button("Create account", use_container_width=True):
-                _authenticate(client.register, username, password)
+                _register(username, password, registration_code)
     return st.session_state.token
 
 
@@ -58,6 +59,20 @@ def _authenticate(fn, username: str, password: str) -> None:
         return
     try:
         result = fn(username, password)
+    except client.ApiError as exc:
+        st.error(str(exc))
+        return
+    st.session_state.token = result["access_token"]
+    st.session_state.username = result["username"]
+    st.rerun()
+
+
+def _register(username: str, password: str, registration_code: str) -> None:
+    if not username or not password:
+        st.warning("Username and password are required.")
+        return
+    try:
+        result = client.register(username, password, registration_code or None)
     except client.ApiError as exc:
         st.error(str(exc))
         return

@@ -34,7 +34,7 @@ class DocumentService:
 
         rows = await fetch_all(
             """
-            SELECT id, filename, original_filename, status, chunk_count, error_message, created_at, updated_at
+            SELECT id, filename, original_filename, status, chunk_count, page_count, error_message, created_at, updated_at
             FROM documents
             WHERE user_id = ?
             ORDER BY updated_at DESC, id DESC
@@ -48,6 +48,7 @@ class DocumentService:
 
         original_filename = upload.filename or "document"
         validate_extension(original_filename)
+        await self._assert_user_document_capacity(user.id)
         safe_filename = sanitize_filename(original_filename)
         tmp_path, content_hash, _size = await save_upload_to_temp(upload)
 
@@ -105,7 +106,29 @@ class DocumentService:
         updated = await self._get_document_row(user.id, document_id)
         return _document_response(updated)
 
+    async def ingest_uploads(self, user: User, uploads: list[UploadFile]) -> list[DocumentResponse]:
+        """Ingest a small batch of uploaded files sequentially for predictable memory use."""
+
+        settings = get_settings()
+        if len(uploads) > settings.max_files_per_upload:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Upload at most {settings.max_files_per_upload} files at a time.",
+            )
+        row = await fetch_one("SELECT COUNT(*) AS count FROM documents WHERE user_id = ? AND status != 'failed'", (user.id,))
+        current_count = int(row["count"]) if row is not None else 0
+        if current_count + len(uploads) > settings.max_documents_per_user:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Document limit reached. Keep at most {settings.max_documents_per_user} documents indexed.",
+            )
+        documents: list[DocumentResponse] = []
+        for upload in uploads:
+            documents.append(await self.ingest_upload(user, upload))
+        return documents
+
     async def _ingest_existing_file(self, user_id: int, document_id: int, path: Path, filename: str) -> None:
+        settings = get_settings()
         db = await get_db()
         await db.execute(
             """
@@ -118,8 +141,9 @@ class DocumentService:
         await db.execute("DELETE FROM chunks WHERE document_id = ? AND user_id = ?", (document_id, user_id))
         await db.commit()
 
-        raw_text = await parse_document(path)
-        cleaned = clean_text(raw_text)
+        parsed = await parse_document(path, settings.max_pages_per_document)
+        await self._assert_user_page_capacity(user_id, parsed.page_count, document_id)
+        cleaned = clean_text(parsed.text)
         if not cleaned:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No extractable text found")
 
@@ -146,9 +170,10 @@ class DocumentService:
             """
             UPDATE documents
             SET status = ?, chunk_count = ?, error_message = NULL, updated_at = CURRENT_TIMESTAMP
+            , page_count = ?
             WHERE id = ? AND user_id = ?
             """,
-            ("ready", len(chunks), document_id, user_id),
+            ("ready", len(chunks), parsed.page_count, document_id, user_id),
         )
         await db.commit()
         await self.index_service.rebuild_user_indexes(user_id)
@@ -156,7 +181,7 @@ class DocumentService:
     async def _get_document_row(self, user_id: int, document_id: int):
         row = await fetch_one(
             """
-            SELECT id, user_id, filename, original_filename, file_path, status, chunk_count, error_message, created_at, updated_at
+            SELECT id, user_id, filename, original_filename, file_path, status, chunk_count, page_count, error_message, created_at, updated_at
             FROM documents
             WHERE id = ? AND user_id = ?
             """,
@@ -165,6 +190,29 @@ class DocumentService:
         if row is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
         return row
+
+    async def _assert_user_document_capacity(self, user_id: int) -> None:
+        settings = get_settings()
+        row = await fetch_one("SELECT COUNT(*) AS count FROM documents WHERE user_id = ? AND status != 'failed'", (user_id,))
+        current_count = int(row["count"]) if row is not None else 0
+        if current_count >= settings.max_documents_per_user:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Document limit reached. Keep at most {settings.max_documents_per_user} documents indexed.",
+            )
+
+    async def _assert_user_page_capacity(self, user_id: int, new_page_count: int, document_id: int) -> None:
+        settings = get_settings()
+        row = await fetch_one(
+            "SELECT COALESCE(SUM(page_count), 0) AS page_count FROM documents WHERE user_id = ? AND id != ?",
+            (user_id, document_id),
+        )
+        current_pages = int(row["page_count"]) if row is not None else 0
+        if current_pages + new_page_count > settings.max_pages_per_user:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Page limit exceeded. Keep indexed documents under {settings.max_pages_per_user} total pages.",
+            )
 
     def _delete_upload_dir(self, file_path: str) -> None:
         settings = get_settings()
@@ -189,6 +237,7 @@ def _document_response(row) -> DocumentResponse:
         original_filename=str(row["original_filename"]),
         status=str(row["status"]),
         chunk_count=int(row["chunk_count"]),
+        page_count=int(row["page_count"]),
         error_message=row["error_message"],
         created_at=str(row["created_at"]),
         updated_at=str(row["updated_at"]),

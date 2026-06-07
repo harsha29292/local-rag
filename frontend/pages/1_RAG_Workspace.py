@@ -27,12 +27,15 @@ left, right = st.columns([0.38, 0.62], gap="large")
 
 with left:
     st.subheader("Documents")
-    uploaded = st.file_uploader("Upload", type=["pdf", "docx", "doc", "txt"], accept_multiple_files=False)
-    if uploaded and st.button("Index document", type="primary", use_container_width=True):
+    uploaded_files = st.file_uploader("Upload", type=["pdf", "docx", "txt"], accept_multiple_files=True)
+    if uploaded_files and len(uploaded_files) > 5:
+        st.warning("Upload at most 5 files at a time.")
+    if uploaded_files and len(uploaded_files) <= 5 and st.button("Index document(s)", type="primary", use_container_width=True):
         try:
-            with st.spinner("Indexing document"):
-                client.upload_document(token, uploaded.name, uploaded.getvalue())
-            st.success("Indexed")
+            uploads = [(uploaded.name, uploaded.getvalue()) for uploaded in uploaded_files]
+            with st.spinner("Indexing document(s)"):
+                result = client.upload_documents(token, uploads)
+            st.success(result.get("message", "Indexed"))
             st.rerun()
         except client.ApiError as exc:
             st.error(str(exc))
@@ -46,7 +49,7 @@ with left:
     for doc in documents:
         with st.container(border=True):
             st.markdown(f"**{doc['filename']}**")
-            st.caption(f"{doc['status']} · {doc['chunk_count']} chunks")
+            st.caption(f"{doc['status']} · {doc['chunk_count']} chunks · {doc.get('page_count', 0)} pages")
             if doc.get("error_message"):
                 st.error(doc["error_message"])
             col_a, col_b = st.columns(2)

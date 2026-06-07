@@ -95,7 +95,8 @@ class OllamaClient:
             "messages": messages,
             "stream": True,
             "options": {
-                "temperature": 0.2,
+                "temperature": 0.0,
+                "top_p": 0.9,
                 "num_ctx": 4096,
             },
         }

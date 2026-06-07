@@ -12,7 +12,6 @@ from fastapi import HTTPException, UploadFile, status
 
 from backend.config.settings import get_settings
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt"}
 _SAFE_NAME_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 
@@ -28,10 +27,11 @@ def validate_extension(filename: str) -> str:
     """Validate an uploaded filename and return its lowercase suffix."""
 
     suffix = Path(filename).suffix.lower()
-    if suffix not in ALLOWED_EXTENSIONS:
+    allowed_extensions = set(get_settings().allowed_upload_extensions)
+    if suffix not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported file type '{suffix}'. Allowed: {sorted(ALLOWED_EXTENSIONS)}",
+            detail=f"Unsupported file type '{suffix}'. Allowed: {sorted(allowed_extensions)}",
         )
     return suffix
 

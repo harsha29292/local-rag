@@ -84,6 +84,7 @@ async def init_db() -> None:
             content_hash TEXT NOT NULL,
             status TEXT NOT NULL,
             chunk_count INTEGER NOT NULL DEFAULT 0,
+            page_count INTEGER NOT NULL DEFAULT 0,
             error_message TEXT,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -135,4 +136,15 @@ async def init_db() -> None:
         CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
         """
     )
+    await _ensure_column(db, "documents", "page_count", "INTEGER NOT NULL DEFAULT 0")
     await db.commit()
+
+
+async def _ensure_column(db: aiosqlite.Connection, table: str, column: str, definition: str) -> None:
+    """Add a column to an existing SQLite table when upgrading old local DBs."""
+
+    cursor = await db.execute(f"PRAGMA table_info({table})")
+    rows = await cursor.fetchall()
+    existing = {str(row["name"]) for row in rows}
+    if column not in existing:
+        await db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")

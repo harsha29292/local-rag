@@ -25,7 +25,7 @@ FastAPI is the only layer that talks to Ollama. Streamlit is a client for auth, 
 
 ## Prerequisites
 
-1. Python 3.14+
+1. Python 3.11+
 2. Ollama running locally
 3. Models pulled:
 
@@ -39,14 +39,14 @@ For reranking, pre-download/cache `cross-encoder/ms-marco-MiniLM-L-6-v2` if the 
 ## Setup
 
 ```powershell
-python --version  # should print Python 3.14.x
+python --version  # should print Python 3.11.x
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-If `python` does not point to Python 3.14, invoke your Python 3.14 executable directly when creating the venv.
+If `python` does not point to Python 3.11, invoke your Python 3.11 executable directly when creating the venv.
 
 Edit `.env` and set `JWT_SECRET_KEY` to a strong random value.
 
@@ -56,7 +56,15 @@ Optional reranking and evaluation packages:
 pip install -r requirements-optional.txt
 ```
 
-FAISS is included in the core requirements for Python 3.14. The backend also has a NumPy cosine fallback so development still works if FAISS is temporarily unavailable on a machine.
+FAISS is included in the core requirements. The backend also has a NumPy cosine fallback so development still works if FAISS is temporarily unavailable on a machine.
+
+## Performance Limits
+
+- Upload up to 5 files at a time.
+- Keep up to 5 indexed documents per user.
+- Keep indexed PDFs under 800 total pages per user.
+- Supported upload types are PDF, DOCX, and TXT.
+- Retrieval uses FAISS dense search + BM25 sparse search + Reciprocal Rank Fusion. The reranker is disabled to keep latency and memory predictable.
 
 ## Run
 
