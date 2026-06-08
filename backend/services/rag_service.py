@@ -27,6 +27,8 @@ class RagService:
         """Retrieve context, stream an answer, and persist messages."""
 
         conversation = await self.memory.ensure_conversation(user, request.conversation_id, "rag", request.question)
+        history = await self.memory.recent_chat_messages(user, conversation.id, limit=6)
+        
         await self.memory.add_message(user, conversation.id, "user", request.question)
         yield {"type": "conversation", "conversation_id": conversation.id, "title": conversation.title}
 
@@ -41,7 +43,7 @@ class RagService:
             yield {"type": "done"}
             return
 
-        messages = build_rag_messages(request.question, retrieved)
+        messages = build_rag_messages(request.question, retrieved, history)
         answer_parts: list[str] = []
         try:
             async for token in self.ollama.stream_chat(messages):

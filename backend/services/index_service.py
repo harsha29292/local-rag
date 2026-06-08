@@ -46,7 +46,7 @@ class IndexService:
             return
 
         logger.info("Embedding %s chunks for user %s", len(chunks), user_id)
-        embeddings = await self.ollama.embed_texts([chunk.text for chunk in chunks])
+        embeddings = await self.ollama.embed_texts([chunk.text for chunk in chunks], prefix="search_document: ")
         await self.faiss_store.build_user_index(user_id, chunks, embeddings)
 
 

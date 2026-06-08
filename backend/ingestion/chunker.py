@@ -119,6 +119,11 @@ def _last_words(text: str, count: int) -> str:
 
 
 def _count_tokens(text: str) -> int:
-    """Approximate token count cheaply for local chunk sizing."""
+    """Approximate token count cheaply for local chunk sizing.
 
-    return max(1, len(text.split()))
+    Uses a 1.3x multiplier over word count to better approximate real
+    tokenizer output for technical, medical, and legal documents where
+    subword tokenization inflates the count beyond naive word splits.
+    """
+
+    return max(1, int(len(text.split()) * 1.3))

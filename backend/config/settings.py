@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 720
 
     ollama_base_url: str = "http://localhost:11434"
-    ollama_chat_model: str = "llama3.2:latest"
+    ollama_chat_model: str = "phi3:mini"
     ollama_embed_model: str = "nomic-embed-text"
     ollama_timeout_seconds: float = 120.0
     ollama_request_retries: int = 2
@@ -42,14 +42,14 @@ class Settings(BaseSettings):
     max_pages_per_document: int = 800
     allowed_upload_extensions: list[str] = Field(default_factory=lambda: [".pdf", ".docx", ".txt"])
     chunk_size_tokens: int = 650
-    chunk_overlap_tokens: int = 90
+    chunk_overlap_tokens: int = 130
 
     retrieval_dense_top_k: int = 24
     retrieval_sparse_top_k: int = 24
     retrieval_final_top_k: int = 6
     retrieval_min_score: float = 0.012
-    retrieval_min_query_overlap: int = 1
-    rag_context_max_chars: int = 12000
+    retrieval_min_query_overlap: int = 2
+    rag_context_max_chars: int = 24000
     rrf_k: int = 60
 
     public_registration_enabled: bool = True

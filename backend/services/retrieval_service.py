@@ -40,7 +40,8 @@ class RetrievalService:
 
         sparse_results = await sparse_task
         fused = self._reciprocal_rank_fusion([dense_results, sparse_results])
-        grounded = self._filter_weak_results(query, fused)
+        scored = self._apply_min_score(fused)
+        grounded = self._filter_weak_results(query, scored)
         return grounded[:final_top_k]
 
     def _reciprocal_rank_fusion(self, rankings: list[list[RetrievedChunk]]) -> list[RetrievedChunk]:
@@ -60,6 +61,11 @@ class RetrievalService:
         for chunk_id, score in scores.items():
             combined[chunk_id].score = score
         return sorted(combined.values(), key=lambda item: item.score, reverse=True)
+
+    def _apply_min_score(self, results: list[RetrievedChunk]) -> list[RetrievedChunk]:
+        """Drop results below the configured minimum RRF score."""
+
+        return [item for item in results if item.score >= self.settings.retrieval_min_score]
 
     def _filter_weak_results(self, query: str, results: list[RetrievedChunk]) -> list[RetrievedChunk]:
         query_terms = _content_terms(query)

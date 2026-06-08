@@ -42,27 +42,31 @@ class OllamaClient:
                 await asyncio.sleep(0.25 * (attempt + 1))
         raise RuntimeError(f"Ollama request failed: {last_exc}") from last_exc
 
-    async def embed_texts(self, texts: list[str]) -> list[list[float]]:
+    async def embed_texts(self, texts: list[str], prefix: str = "") -> list[list[float]]:
         """Generate embeddings through Ollama, using a small in-memory cache."""
 
         if not texts:
             return []
 
-        cached: list[list[float] | None] = [self._embedding_cache.get(text) for text in texts]
+        # Only apply prefixing if the configured model is nomic-embed-text
+        use_prefix = prefix and "nomic-embed-text" in self.settings.ollama_embed_model
+        prefixed_texts = [f"{prefix}{t}" if use_prefix else t for t in texts]
+
+        cached: list[list[float] | None] = [self._embedding_cache.get(pt) for pt in prefixed_texts]
         missing_positions = [idx for idx, item in enumerate(cached) if item is None]
         if missing_positions:
-            missing_texts = [texts[idx] for idx in missing_positions]
+            missing_texts = [prefixed_texts[idx] for idx in missing_positions]
             embeddings = await self._embed_uncached(missing_texts)
             for idx, embedding in zip(missing_positions, embeddings, strict=True):
                 normalized = _normalize_vector(embedding)
                 cached[idx] = normalized
-                self._embedding_cache[texts[idx]] = normalized
+                self._embedding_cache[prefixed_texts[idx]] = normalized
         return [item for item in cached if item is not None]
 
     async def embed_query(self, query: str) -> list[float]:
         """Generate a normalized query embedding."""
 
-        return (await self.embed_texts([query]))[0]
+        return (await self.embed_texts([query], prefix="search_query: "))[0]
 
     async def _embed_uncached(self, texts: list[str]) -> list[list[float]]:
         """Call Ollama embedding endpoints, preferring the batch endpoint."""
@@ -97,7 +101,7 @@ class OllamaClient:
             "options": {
                 "temperature": 0.0,
                 "top_p": 0.9,
-                "num_ctx": 4096,
+                "num_ctx": 8192,
             },
         }
 

@@ -1,0 +1,300 @@
+{
+  "summary": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "pass_rate": "100.0%",
+    "avg_latency": "12.9s"
+  },
+  "by_category": {
+    "factual": {
+      "passed": 5,
+      "total": 5
+    },
+    "reasoning": {
+      "passed": 3,
+      "total": 3
+    },
+    "cross-doc": {
+      "passed": 1,
+      "total": 1
+    },
+    "refusal": {
+      "passed": 3,
+      "total": 3
+    },
+    "edge": {
+      "passed": 4,
+      "total": 4
+    },
+    "hallucination_trap": {
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "details": [
+    {
+      "category": "factual",
+      "question": "How many days of annual leave are full-time employees entitled to?",
+      "passed": true,
+      "latency": "11.3s",
+      "failure_reasons": [],
+      "answer": "Full-time employees at ACME Corporation are entitled to 24 days of paid annual leave per calendar year. [S1]",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0323",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "factual",
+      "question": "What is the p99 latency of Project Aurora?",
+      "passed": true,
+      "latency": "12.4s",
+      "failure_reasons": [],
+      "answer": "Project Aurora has a p99 latency of under 50 milliseconds (S1).",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0320",
+        "0.0318",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "factual",
+      "question": "What was TechVista's Q3 revenue?",
+      "passed": true,
+      "latency": "11.0s",
+      "failure_reasons": [],
+      "answer": "TechVista Solutions reported a Q3 revenue of INR 847.3 crores (Source: financial_report.txt)",
+      "source_count": 2,
+      "source_scores": [
+        "0.0328",
+        "0.0320"
+      ]
+    },
+    {
+      "category": "factual",
+      "question": "How many Kafka brokers per region does Project Aurora use?",
+      "passed": true,
+      "latency": "14.0s",
+      "failure_reasons": [],
+      "answer": "[S1] (Source: technical_spec.txt)\nProject Aurora uses Apache Kafka clusters with 12 brokers per region.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0320",
+        "0.0318",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "factual",
+      "question": "What is the attrition rate mentioned in the financial report?",
+      "passed": true,
+      "latency": "14.3s",
+      "failure_reasons": [],
+      "answer": "The quarterly annualized attrition rate reported by TechVista Solutions for Q3 FY2024 was 13.8% (S1).",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0323",
+        "0.0317",
+        "0.0312"
+      ]
+    },
+    {
+      "category": "reasoning",
+      "question": "What is the maximum performance bonus percentage and what rating do you need?",
+      "passed": true,
+      "latency": "13.8s",
+      "failure_reasons": [],
+      "answer": "The highest performance bonus at ACME Corporation is 25%, which requires a Rating of 5 (Exceptional). [S1]",
+      "source_count": 4,
+      "source_scores": [
+        "0.0323",
+        "0.0320",
+        "0.0320",
+        "0.0317"
+      ]
+    },
+    {
+      "category": "reasoning",
+      "question": "How much total liquid assets does TechVista have? Break it down.",
+      "passed": true,
+      "latency": "12.3s",
+      "failure_reasons": [],
+      "answer": "TechVista has INR 1,704.1 crores in total liquid assets (S1). This includes INR 1,247.8 crores in cash and equivalents and INR 456.3 crores in short-term investments (S1).",
+      "source_count": 1,
+      "source_scores": [
+        "0.0328"
+      ]
+    },
+    {
+      "category": "reasoning",
+      "question": "What encryption standards does Project Aurora use for data at rest and in transit?",
+      "passed": true,
+      "latency": "17.9s",
+      "failure_reasons": [],
+      "answer": "Project Aurora uses AES-256 (Tier 1 Confidential) for data at rest and TLS 1.3 (Tier 1 Confidential) for data in transit, as per the technical_spec.txt document [S1].",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0323",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "cross-doc",
+      "question": "Compare the hotel allowance for domestic metro travel with the international high-cost city allowance.",
+      "passed": true,
+      "latency": "16.8s",
+      "failure_reasons": [],
+      "answer": "Domestic Metro City Allowance: INR 8,000 per night [S4]\nInternational High-Cost City Allowance (e.g., NYC): USD 300 per night [S1]",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0323",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "refusal",
+      "question": "What is the capital of France?",
+      "passed": true,
+      "latency": "11.4s",
+      "failure_reasons": [],
+      "answer": "The uploaded documents do not contain information about this topic.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0325",
+        "0.0325",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "refusal",
+      "question": "Who is the CEO of ACME Corporation?",
+      "passed": true,
+      "latency": "11.0s",
+      "failure_reasons": [],
+      "answer": "The uploaded documents do not contain information about this topic.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0323",
+        "0.0323",
+        "0.0323",
+        "0.0312"
+      ]
+    },
+    {
+      "category": "refusal",
+      "question": "What programming language is Project Aurora built in?",
+      "passed": true,
+      "latency": "11.3s",
+      "failure_reasons": [],
+      "answer": "The uploaded documents do not contain information about this topic.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0323",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "edge",
+      "question": "What is the RPO and RTO for disaster recovery?",
+      "passed": true,
+      "latency": "13.8s",
+      "failure_reasons": [],
+      "answer": "RPO (Recovery Point Objective): 5 minutes [S6.1]\nRTO (Recovery Time Objective): 30 minutes [S6.1]",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0320",
+        "0.0318",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "edge",
+      "question": "What percentage of TechVista's revenue comes from North America?",
+      "passed": true,
+      "latency": "15.6s",
+      "failure_reasons": [],
+      "answer": "North America accounts for 60% (INR 508.4 crores) of TechVista Solutions Private Limited's total Q3 FY2024 revenue. [S1]",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0320",
+        "0.0320",
+        "0.0312"
+      ]
+    },
+    {
+      "category": "edge",
+      "question": "How many WAF rules are active?",
+      "passed": true,
+      "latency": "10.6s",
+      "failure_reasons": [],
+      "answer": "[S2] According to the company_policy.txt, there are currently 247 active Web Application Firewall (WAF) rules in place.",
+      "source_count": 2,
+      "source_scores": [
+        "0.0328",
+        "0.0320"
+      ]
+    },
+    {
+      "category": "edge",
+      "question": "What is the monthly internet reimbursement for remote workers?",
+      "passed": true,
+      "latency": "12.5s",
+      "failure_reasons": [],
+      "answer": "INR 1,500/month (as per company_policy.txt)",
+      "source_count": 4,
+      "source_scores": [
+        "0.0323",
+        "0.0323",
+        "0.0323",
+        "0.0312"
+      ]
+    },
+    {
+      "category": "hallucination_trap",
+      "question": "What is the employee stock option (ESOP) policy at ACME Corporation?",
+      "passed": true,
+      "latency": "11.4s",
+      "failure_reasons": [],
+      "answer": "The uploaded documents do not contain information about this topic.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0325",
+        "0.0325",
+        "0.0315",
+        "0.0315"
+      ]
+    },
+    {
+      "category": "hallucination_trap",
+      "question": "What database does Project Aurora use for its machine learning pipeline?",
+      "passed": true,
+      "latency": "11.1s",
+      "failure_reasons": [],
+      "answer": "The uploaded documents do not contain information about this topic.",
+      "source_count": 4,
+      "source_scores": [
+        "0.0328",
+        "0.0320",
+        "0.0318",
+        "0.0315"
+      ]
+    }
+  ]
+}
