@@ -18,6 +18,21 @@ st.set_page_config(page_title="Local RAG", page_icon=":material/database:", layo
 st.title("Local RAG")
 render_auth_sidebar()
 
+heading_col, image_col = st.columns([4, 1])
+with heading_col:
+    st.markdown(
+        "## Fully local AI System using Retrieval Augmented Generation by \n" 
+        "### *Sai Kshitish S, Sri Harsha P, Arun A*" 
+    )
+image_path = Path(__file__).parent / "image.jpeg"
+
+with image_col:
+    st.image(
+        str(image_path),
+        width=140,
+        caption="DRDO DLRL"
+    )
+
 st.page_link("pages/1_RAG_Workspace.py", label="RAG Workspace", icon=":material/folder_open:")
 st.page_link("pages/2_General_Chat.py", label="General Chat", icon=":material/chat:")
 
